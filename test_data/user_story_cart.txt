@@ -1,0 +1,25 @@
+US-002
+
+Title:
+Add Product to Cart
+
+User Story:
+
+As a customer,
+I want to add a product to my shopping cart,
+so that I can purchase the product later.
+
+Acceptance Criteria:
+
+AC1:
+A logged-in user can add a product to the shopping cart.
+
+AC2:
+The cart badge should display the number of
+products currently in the cart.
+
+AC3:
+The selected product should appear in the cart.
+
+AC4:
+The user should be able to proceed to checkout.

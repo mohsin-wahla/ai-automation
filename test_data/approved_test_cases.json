@@ -1,0 +1,73 @@
+{
+  "test_cases": [
+    {
+      "test_case_id": "TC-US002-01",
+      "title": "Verify that a logged-in user can add a single product to the shopping cart",
+      "type": "Functional",
+      "priority": "High",
+      "preconditions": [
+        "User is logged into the application",
+        "User is on the product listing page"
+      ],
+      "steps": [
+        "Click the 'Add to Cart' button for Sauce Labs Backpack",
+        "Observe the cart badge count",
+        "Navigate to the shopping cart page"
+      ],
+      "test_data": {
+        "product_name": "Sauce Labs Backpack"
+      },
+      "expected_result": [
+        "The cart badge displays '1'",
+        "Sauce Labs Backpack is visible in the shopping cart"
+      ],
+      "automation_candidate": true
+    },
+    {
+      "test_case_id": "TC-US002-02",
+      "title": "Verify cart badge updates correctly when adding multiple products",
+      "type": "Functional",
+      "priority": "Medium",
+      "preconditions": [
+        "User is logged into the application",
+        "Shopping cart is empty"
+      ],
+      "steps": [
+        "Add Sauce Labs Backpack to the cart",
+        "Add Sauce Labs Bike Light to the cart",
+        "Observe the cart badge"
+      ],
+      "test_data": {
+        "products": [
+          "Sauce Labs Backpack",
+          "Sauce Labs Bike Light"
+        ]
+      },
+      "expected_result": [
+        "The cart badge displays the total number of products (2) currently in the cart"
+      ],
+      "automation_candidate": true
+    },
+    {
+      "test_case_id": "TC-US002-03",
+      "title": "Verify ability to proceed to checkout from the cart",
+      "type": "Functional",
+      "priority": "High",
+      "preconditions": [
+        "User is logged into the application",
+        "A product has been added to the shopping cart"
+      ],
+      "steps": [
+        "Navigate to the shopping cart page",
+        "Click the 'Checkout' button"
+      ],
+      "test_data": {
+        "product_name": "Sauce Labs Backpack"
+      },
+      "expected_result": [
+        "The user is successfully redirected to the checkout flow"
+      ],
+      "automation_candidate": true
+    }
+  ]
+}
