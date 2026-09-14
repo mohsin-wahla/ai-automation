@@ -29,7 +29,8 @@ class TestCaseGenerator:
             user_story
         )
 
-        response = self.ai.generate(prompt)
+        # response = self.ai.generate(prompt)
+        response = self.ai.generate_test_cases(prompt)
 
         data = json.loads(response)
 

@@ -19,9 +19,12 @@ class GeminiClient:
             api_key=api_key
         )
 
-    def generate(self, prompt: str) -> str:
+        self.model = "gemini-3-flash-preview"
+
+    def generate_test_cases(self, prompt: str) -> str:
+
         response = self.client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model=self.model,
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -92,3 +95,28 @@ class GeminiClient:
         )
 
         return response.text
+
+    def generate_automation(self, prompt: str) -> str:
+
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="text/plain"
+            )
+        )
+
+
+        return response.text or ""
+
+    # def generate_automation(self, prompt: str) -> str:
+    #
+    #     response = self.client.models.generate_content(
+    #         model=self.model,
+    #         contents=prompt,
+    #         config=types.GenerateContentConfig(
+    #             response_mime_type="text/plain"
+    #         )
+    #     )
+    #
+    #     return response.text
