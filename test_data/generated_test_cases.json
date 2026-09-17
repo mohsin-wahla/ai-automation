@@ -2,39 +2,41 @@
   "test_cases": [
     {
       "test_case_id": "TC-001",
-      "title": "Successfully add a single product to the cart",
+      "title": "Successfully add a single product to the cart as a logged-in user",
       "type": "Functional",
       "priority": "High",
       "preconditions": [
-        "User is logged into the application",
-        "User is on the product catalog page"
+        "The user is logged in to the application",
+        "At least one product is available for purchase"
       ],
       "steps": [
-        "Locate a product to purchase",
-        "Click the action to add the product to the shopping cart",
-        "Navigate to the shopping cart page"
+        "Navigate to the product page or product list",
+        "Select a product and click the add to cart button",
+        "Observe the cart badge",
+        "Open the shopping cart"
       ],
       "test_data": {},
       "expected_result": [
+        "The product is successfully added to the cart",
         "The cart badge displays '1'",
-        "The selected product is visible in the shopping cart"
+        "The selected product is visible within the shopping cart"
       ],
       "automation_candidate": true
     },
     {
       "test_case_id": "TC-002",
-      "title": "Update cart badge when adding multiple products",
+      "title": "Verify cart badge increments when multiple products are added",
       "type": "Functional",
       "priority": "Medium",
       "preconditions": [
-        "User is logged into the application",
-        "The shopping cart is currently empty"
+        "The user is logged in to the application",
+        "At least two different products are available"
       ],
       "steps": [
         "Add the first product to the cart",
-        "Observe the cart badge count",
-        "Add a second different product to the cart",
-        "Observe the cart badge count"
+        "Observe the cart badge",
+        "Add a second product to the cart",
+        "Observe the cart badge"
       ],
       "test_data": {},
       "expected_result": [
@@ -45,20 +47,20 @@
     },
     {
       "test_case_id": "TC-003",
-      "title": "Navigate to checkout from the shopping cart",
+      "title": "Proceed to checkout from the shopping cart",
       "type": "Functional",
       "priority": "High",
       "preconditions": [
-        "User is logged into the application",
-        "At least one product has been added to the shopping cart"
+        "The user is logged in to the application",
+        "The user has at least one product in the shopping cart"
       ],
       "steps": [
-        "Open the shopping cart",
-        "Click the button to proceed to checkout"
+        "Navigate to the shopping cart page",
+        "Click the proceed to checkout button"
       ],
       "test_data": {},
       "expected_result": [
-        "The user is redirected to the checkout interface"
+        "The user is redirected to the checkout page"
       ],
       "automation_candidate": true
     }

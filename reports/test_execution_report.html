@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>AI Automation Test Report</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    background: #f4f6f9;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+.header {
+    background: linear-gradient(
+        135deg,
+        #111827,
+        #1f2937
+    );
+
+    color: white;
+
+    padding: 32px;
+
+    border-radius: 14px;
+
+    margin-bottom: 24px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 0, 0, 0.08);
+}
+
+.header h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+}
+
+.header p {
+    margin: 0;
+    color: #d1d5db;
+}
+
+.summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 16px;
+
+    margin-bottom: 24px;
+}
+
+.card {
+    background: white;
+
+    padding: 22px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 12px
+        rgba(0, 0, 0, 0.06);
+}
+
+.card-label {
+    color: #6b7280;
+
+    font-size: 13px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.card-value {
+    font-size: 30px;
+
+    font-weight: 700;
+
+    margin-top: 8px;
+}
+
+.card-value.total {
+    color: #374151;
+}
+
+.card-value.passed {
+    color: #16a34a;
+}
+
+.card-value.failed {
+    color: #dc2626;
+}
+
+.card-value.status {
+    font-size: 18px;
+}
+
+.status-box {
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    margin-bottom: 24px;
+
+    border-left:
+        5px solid #16a34a;
+}
+
+.status-box.failed {
+    border-left-color: #dc2626;
+}
+
+.status-box strong {
+    font-size: 16px;
+}
+
+.report-section {
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 24px;
+
+    box-shadow:
+        0 3px 12px
+        rgba(0, 0, 0, 0.06);
+}
+
+.report-section h2 {
+    margin-top: 0;
+
+    font-size: 20px;
+}
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+
+    background: #f9fafb;
+
+    padding: 14px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    font-size: 13px;
+
+    color: #6b7280;
+
+    text-transform: uppercase;
+}
+
+td {
+    padding: 18px 14px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    vertical-align: top;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+.test-id {
+    font-family: monospace;
+
+    background: #eef2ff;
+
+    color: #4338ca;
+
+    padding: 6px 9px;
+
+    border-radius: 6px;
+
+    font-size: 13px;
+}
+
+.test-file {
+    color: #9ca3af;
+
+    font-size: 12px;
+
+    margin-top: 6px;
+
+    word-break: break-all;
+}
+
+.badge {
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+.badge.passed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge.failed {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.analysis {
+    margin-top: 18px;
+
+    border:
+        1px solid #fecaca;
+
+    border-radius: 10px;
+
+    background: #fff7f7;
+
+    overflow: hidden;
+}
+
+.analysis-title {
+    background: #fef2f2;
+
+    color: #991b1b;
+
+    font-weight: 700;
+
+    padding: 12px 14px;
+
+    border-bottom:
+        1px solid #fecaca;
+}
+
+.analysis pre {
+    margin: 0;
+
+    padding: 16px;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    color: #374151;
+}
+
+.analysis.unavailable {
+    padding: 12px 14px;
+
+    background: #f9fafb;
+
+    border-color: #e5e7eb;
+
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+.footer {
+    text-align: center;
+
+    color: #9ca3af;
+
+    font-size: 12px;
+
+    margin-top: 24px;
+}
+
+@media (max-width: 800px) {
+
+    .container {
+        padding: 16px;
+    }
+
+    .summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>
+            AI Automation Test Report
+        </h1>
+
+        <p>
+            Playwright + Pytest Execution Report
+        </p>
+
+    </div>
+
+
+    <div class="summary">
+
+        <div class="card">
+
+            <div class="card-label">
+                Total Tests
+            </div>
+
+            <div class="card-value total">
+                6
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-label">
+                Passed
+            </div>
+
+            <div class="card-value passed">
+                4
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-label">
+                Failed
+            </div>
+
+            <div class="card-value failed">
+                2
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-label">
+                Execution Status
+            </div>
+
+            <div class="card-value status">
+                ONE OR MORE TESTS FAILED
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="status-box failed">
+
+        <strong>
+            Execution Time:
+        </strong>
+
+        2026-09-17T10:56:10.016093
+
+    </div>
+
+
+    <div class="report-section">
+
+        <h2>
+            Test Results
+        </h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Test Case
+                    </th>
+
+                    <th>
+                        Test Details
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                
+                <tr>
+                    <td>
+                        <span class="test-id">
+                            TC-001
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>
+                            test_successfully_add_single_product_to_cart
+                        </strong>
+
+                        <div class="test-file">
+                            tests/generated/US-002/test_TC-001.py
+                        </div>
+
+                        
+                    </td>
+
+                    <td>
+                        <span class="badge passed">
+                            ✓ PASSED
+                        </span>
+                    </td>
+                </tr>
+                
+
+                <tr>
+                    <td>
+                        <span class="test-id">
+                            TC-002
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>
+                            test_cart_badge_increments_when_multiple_products_added
+                        </strong>
+
+                        <div class="test-file">
+                            tests/generated/US-002/test_TC-002.py
+                        </div>
+
+                        
+                    </td>
+
+                    <td>
+                        <span class="badge passed">
+                            ✓ PASSED
+                        </span>
+                    </td>
+                </tr>
+                
+
+                <tr>
+                    <td>
+                        <span class="test-id">
+                            TC-003
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>
+                            test_proceed_to_checkout_from_shopping_cart
+                        </strong>
+
+                        <div class="test-file">
+                            tests/generated/US-002/test_TC-003.py
+                        </div>
+
+                        
+                    </td>
+
+                    <td>
+                        <span class="badge passed">
+                            ✓ PASSED
+                        </span>
+                    </td>
+                </tr>
+                
+
+                <tr>
+                    <td>
+                        <span class="test-id">
+                            TC_US002_01
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>
+                            test_add_product_to_cart
+                        </strong>
+
+                        <div class="test-file">
+                            tests/generated/test_TC_US002_01.py
+                        </div>
+
+                        
+                    </td>
+
+                    <td>
+                        <span class="badge passed">
+                            ✓ PASSED
+                        </span>
+                    </td>
+                </tr>
+                
+
+                <tr>
+                    <td>
+                        <span class="test-id">
+                            TC_US002_02
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>
+                            test_added_product_is_visible_in_cart
+                        </strong>
+
+                        <div class="test-file">
+                            tests/generated/test_TC_US002_02.py
+                        </div>
+
+                        
+                    <div class="analysis">
+                        <div class="analysis-title">
+                            AI Failure Analysis
+                        </div>
+
+                        <pre>**FAILURE**
+The test `test_added_product_is_visible_in_cart` failed during an `expect` assertion because the locator resolved to multiple elements, triggering a Playwright strict mode violation.
+
+**LIKELY ROOT CAUSE**
+The selector `[data-test=&quot;inventory-item-name&quot;]` is a generic attribute shared by all products in the cart. Because there are 6 items currently in the cart, Playwright cannot perform a single-element text assertion (`to_have_text`) as it does not know which of the 6 elements to validate.
+
+**EVIDENCE**
+*   **Error Message:** `E Error: strict mode violation: locator(&quot;[data-test=\&quot;inventory-item-name\&quot;]&quot;) resolved to 6 elements:`
+*   **Call Log:** The log identifies 6 distinct elements matching the locator, ranging from &quot;Sauce Labs Backpack&quot; to &quot;Test.allTheThings() T-Shirt (Red)&quot;.
+*   **Actual Value:** `None` (Playwright returns `None` for the text value when strict mode fails before the text can be retrieved).
+
+**RECOMMENDED ACTION**
+Refine the locator to be specific to the desired product. Instead of targeting the generic `data-test` attribute alone, chain the locator with a filter or use a text-based locator (e.g., `page.get_by_text(&quot;Sauce Labs Backpack&quot;)`) to ensure the locator resolves to exactly one element even when multiple items are present in the cart.</pre>
+                    </div>
+                    
+                    </td>
+
+                    <td>
+                        <span class="badge failed">
+                            ✗ FAILED
+                        </span>
+                    </td>
+                </tr>
+                
+
+                <tr>
+                    <td>
+                        <span class="test-id">
+                            TC_US002_03
+                        </span>
+                    </td>
+
+                    <td>
+                        <strong>
+                            test_cart_badge_should_show_five_items
+                        </strong>
+
+                        <div class="test-file">
+                            tests/generated/test_TC_US002_03.py
+                        </div>
+
+                        
+                    <div class="analysis">
+                        <div class="analysis-title">
+                            AI Failure Analysis
+                        </div>
+
+                        <pre>**FAILURE**
+The test `test_cart_badge_should_show_five_items` failed during an assertion on the shopping cart badge. The test expected the badge to display the text `&quot;5&quot;`, but it actually displayed `&quot;1&quot;`.
+
+**LIKELY ROOT CAUSE**
+There is a logic mismatch between the test actions and the assertion. The test script performs exactly one &quot;Add to Cart&quot; action but asserts that the cart count should be five. This appears to be a scripted intentional failure or a hardcoded expectation that does not account for the state of the application.
+
+**EVIDENCE**
+*   **Test Code (Line 19):** Only one item is added to the cart: `page.locator(&#x27;[data-test=&quot;add-to-cart-sauce-labs-backpack&quot;]&#x27;).click()`.
+*   **Test Code (Line 21):** A comment explicitly states: `# Intentional failure for MCP flow testing`.
+*   **Error Message:** `AssertionError: Locator expected to have text &#x27;5&#x27;`.
+*   **Actual Value:** `Actual value: 1`.
+*   **Call Log:** The Playwright locator resolved to `&lt;span class=&quot;shopping_cart_badge&quot; data-test=&quot;shopping-cart-badge&quot;&gt;1&lt;/span&gt;`.
+
+**RECOMMENDED ACTION**
+Update the assertion value to `&quot;1&quot;` to accurately reflect the number of items added during the test execution, or modify the test logic to add four additional items to the cart before asserting the count is `&quot;5&quot;`.</pre>
+                    </div>
+                    
+                    </td>
+
+                    <td>
+                        <span class="badge failed">
+                            ✗ FAILED
+                        </span>
+                    </td>
+                </tr>
+                
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <div class="footer">
+
+        Generated by AI Automation Framework
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

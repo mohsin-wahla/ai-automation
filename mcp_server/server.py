@@ -34,31 +34,6 @@ def run_tests() -> str:
         results,
         indent=4
     )
-# @mcp.tool()
-# def run_tests() -> str:
-#     """
-#     Run all generated Playwright tests through the
-#     existing TestRunner and return the execution summary.
-#     """
-#
-#     import sys
-#
-#     print("[SERVER] run_tests STARTED", file=sys.stderr)
-#
-#     runner = TestRunner()
-#
-#     print("[SERVER] TestRunner created", file=sys.stderr)
-#
-#     results = runner.run_all_generated_tests()
-#
-#     print("[SERVER] run_all_generated_tests FINISHED", file=sys.stderr)
-#
-#     return json.dumps(
-#         {
-#             "tests": results
-#         },
-#         indent=4
-#     )
 
 @mcp.tool()
 def read_test_report() -> str:

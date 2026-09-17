@@ -147,15 +147,17 @@ class AutomationGenerator:
         return generated_code
 
     def save_generated_test(
-        self,
-        test_case_id,
-        generated_code
+            self,
+            test_case_id,
+            generated_code,
+            user_story_id
     ):
 
         output_directory = (
-            self.project_root
-            / "tests"
-            / "generated"
+                self.project_root
+                / "tests"
+                / "generated"
+                / user_story_id
         )
 
         output_directory.mkdir(
@@ -164,8 +166,8 @@ class AutomationGenerator:
         )
 
         output_file = (
-            output_directory
-            / f"test_{test_case_id}.py"
+                output_directory
+                / f"test_{test_case_id}.py"
         )
 
         output_file.write_text(
@@ -174,3 +176,4 @@ class AutomationGenerator:
         )
 
         return output_file
+

@@ -1,49 +1,22 @@
 import json
 import re
 import subprocess
+
 from datetime import datetime
-import sys
+from pathlib import Path
 
 from ai.failure_analyzer import FailureAnalyzer
+from ai.html_reporter import HTMLReporter
 
 
 class TestRunner:
 
     def __init__(self):
-
+        # AI failure analysis enabled.
+        # If you want completely non-AI execution temporarily,
+        # change this to None.
         self.failure_analyzer = FailureAnalyzer()
-        # self.failure_analyzer = None
-
-    def run_test(self, test_file: str):
-
-        result = subprocess.run(
-            [
-                "pytest",
-                test_file,
-                "-v"
-            ],
-            capture_output=True,
-            text=True,
-            stdin=subprocess.DEVNULL
-        )
-
-
-        print("\n===== PYTEST OUTPUT =====\n", file=sys.stderr)
-        print(result.stdout, file=sys.stderr)
-
-        if result.stderr:
-            print("\n===== PYTEST ERRORS =====\n", file=sys.stderr)
-            print(result.stderr, file=sys.stderr)
-
-        if result.returncode == 0:
-
-            print("\n===== TEST RESULT =====")
-            print("PASS")
-
-            return
-
-        print("\n===== TEST RESULT =====")
-        print("FAIL")
+        self.html_reporter = HTMLReporter()
 
     def run_all_generated_tests(self):
 
@@ -61,8 +34,10 @@ class TestRunner:
         output = result.stdout
 
         if result.stderr:
-            output += "\n\n===== PYTEST ERRORS =====\n"
-            output += result.stderr
+            output += (
+                "\n\n===== PYTEST ERRORS =====\n"
+                + result.stderr
+            )
 
         if result.returncode == 0:
             status = "ALL TESTS PASSED"
@@ -70,6 +45,10 @@ class TestRunner:
             status = "ONE OR MORE TESTS FAILED"
 
         test_results = []
+
+        # --------------------------------
+        # Parse pytest results
+        # --------------------------------
 
         for line in result.stdout.splitlines():
 
@@ -79,39 +58,27 @@ class TestRunner:
                 continue
 
             if (
-                    " PASSED " not in line
-                    and not line.endswith(" PASSED")
-                    and " FAILED " not in line
-                    and not line.endswith(" FAILED")
+                " PASSED " not in line
+                and not line.endswith(" PASSED")
+                and " FAILED " not in line
+                and not line.endswith(" FAILED")
             ):
                 continue
 
-            test_path = line.split(
-                " ",
-                1
-            )[0]
+            test_path = line.split(" ", 1)[0]
 
             if "::" not in test_path:
                 continue
 
-            test_file = test_path.split(
+            test_file, test_name = test_path.split(
                 "::",
                 1
-            )[0]
-
-            test_name = test_path.split(
-                "::",
-                1
-            )[1]
+            )
 
             test_name = re.sub(
                 r"\[.*\]$",
                 "",
                 test_name
-            )
-
-            test_id = self.extract_test_case_id(
-                test_file
             )
 
             if "PASSED" in line:
@@ -121,12 +88,18 @@ class TestRunner:
 
             test_results.append(
                 {
-                    "test_case_id": test_id,
+                    "test_case_id": self.extract_test_case_id(
+                        test_file
+                    ),
                     "test_name": test_name,
                     "test_file": test_file,
                     "status": test_status
                 }
             )
+
+        # --------------------------------
+        # Failure analysis
+        # --------------------------------
 
         failed_tests = [
             test
@@ -134,82 +107,71 @@ class TestRunner:
             if test["status"] == "FAILED"
         ]
 
-        for failed_test in failed_tests:
+        if self.failure_analyzer:
 
-            test_file = failed_test["test_file"]
-            test_name = failed_test["test_name"]
+            for failed_test in failed_tests:
 
-            error_output = self.extract_failure_output(
-                result.stdout,
-                test_name
-            )
+                test_file = failed_test["test_file"]
+                test_name = failed_test["test_name"]
 
-            if self.failure_analyzer:
-                with open(
+                error_output = self.extract_failure_output(
+                    result.stdout,
+                    test_name
+                )
+
+                try:
+
+                    with open(
                         test_file,
                         "r",
                         encoding="utf-8"
-                ) as file:
-                    test_code = file.read()
+                    ) as file:
+                        test_code = file.read()
 
-                analysis = self.failure_analyzer.analyze(
-                    test_name=test_name,
-                    error_message=error_output,
-                    test_code=test_code
-                )
+                    analysis = self.failure_analyzer.analyze(
+                        test_name=test_name,
+                        error_message=error_output,
+                        test_code=test_code
+                    )
 
-                failed_test["ai_analysis"] = analysis
+                    failed_test["ai_analysis"] = analysis
 
-        # for failed_test in failed_tests:
-        #     test_file = failed_test["test_file"]
-        #     test_name = failed_test["test_name"]
-        #
-        #     error_output = self.extract_failure_output(
-        #         result.stdout,
-        #         test_name
-        #     )
-        #
-        #     with open(
-        #             test_file,
-        #             "r",
-        #             encoding="utf-8"
-        #     ) as file:
-        #         test_code = file.read()
-        #
-        #     analysis = self.failure_analyzer.analyze(
-        #         test_name=test_name,
-        #         error_message=error_output,
-        #         test_code=test_code
-        #     )
-        #
-        #     failed_test["ai_analysis"] = analysis
+                except Exception as error:
+
+                    failed_test["ai_analysis"] = (
+                        f"Failure analysis could not be generated: "
+                        f"{error}"
+                    )
+
+        # --------------------------------
+        # Final report
+        # --------------------------------
+
+        passed_count = sum(
+            1
+            for test in test_results
+            if test["status"] == "PASSED"
+        )
+
+        failed_count = sum(
+            1
+            for test in test_results
+            if test["status"] == "FAILED"
+        )
 
         report = {
 
             "execution_time": datetime.now().isoformat(),
 
             "summary": {
-
                 "total": len(test_results),
-
-                "passed": len(
-                    [
-                        test
-                        for test in test_results
-                        if test["status"] == "PASSED"
-                    ]
-                ),
-
-                "failed": len(
-                    [
-                        test
-                        for test in test_results
-                        if test["status"] == "FAILED"
-                    ]
-                )
+                "passed": passed_count,
+                "failed": failed_count
             },
 
-            "tests": test_results
+            "tests": test_results,
+
+            "final_status": status
         }
 
         self.save_report(report)
@@ -222,222 +184,30 @@ class TestRunner:
             "report": report
         }
 
-    # def run_all_generated_tests(self):
-    #
-    #     result = subprocess.run(
-    #         [
-    #             "pytest",
-    #             "tests/generated",
-    #             "-v"
-    #         ],
-    #         capture_output=True,
-    #         text=True,
-    #         stdin=subprocess.DEVNULL
-    #     )
-    #
-    #     # result = subprocess.run(
-    #     #     [
-    #     #         "pytest",
-    #     #         "tests/generated",
-    #     #         "-v"
-    #     #     ],
-    #     #     capture_output=True,
-    #     #     text=True
-    #     # )
-    #
-    #     print("\n===== PYTEST OUTPUT =====\n")
-    #     print(result.stdout)
-    #
-    #     if result.stderr:
-    #
-    #         print("\n===== PYTEST ERRORS =====\n")
-    #         print(result.stderr)
-    #
-    #     test_results = []
-    #
-    #     for line in result.stdout.splitlines():
-    #
-    #         line = line.strip()
-    #
-    #         if "::" not in line:
-    #             continue
-    #
-    #         if (
-    #             " PASSED " not in line
-    #             and not line.endswith(" PASSED")
-    #             and " FAILED " not in line
-    #             and not line.endswith(" FAILED")
-    #         ):
-    #             continue
-    #
-    #         test_path = line.split(
-    #             " ",
-    #             1
-    #         )[0]
-    #
-    #         if "::" not in test_path:
-    #             continue
-    #
-    #         test_file = test_path.split(
-    #             "::",
-    #             1
-    #         )[0]
-    #
-    #         test_name = test_path.split(
-    #             "::",
-    #             1
-    #         )[1]
-    #
-    #         test_name = re.sub(
-    #             r"\[.*\]$",
-    #             "",
-    #             test_name
-    #         )
-    #
-    #         test_id = self.extract_test_case_id(
-    #             test_file
-    #         )
-    #
-    #         if "PASSED" in line:
-    #
-    #             status = "PASSED"
-    #
-    #         else:
-    #
-    #             status = "FAILED"
-    #
-    #         test_results.append(
-    #             {
-    #                 "test_case_id": test_id,
-    #                 "test_name": test_name,
-    #                 "test_file": test_file,
-    #                 "status": status
-    #             }
-    #         )
-    #
-    #     if result.returncode == 0:
-    #
-    #         print("\n===== TEST RESULT =====")
-    #         print("ALL TESTS PASSED")
-    #
-    #     else:
-    #
-    #         print("\n===== TEST RESULT =====")
-    #         print("ONE OR MORE TESTS FAILED")
-    #
-    #     print("\n===== TEST CASE RESULTS =====")
-    #
-    #     for test in test_results:
-    #
-    #         print(
-    #             f"{test['test_case_id']} | "
-    #             f"{test['test_name']} | "
-    #             f"{test['status']}"
-    #         )
-    #
-    #     failed_tests = [
-    #         test
-    #         for test in test_results
-    #         if test["status"] == "FAILED"
-    #     ]
-    #
-    #     for failed_test in failed_tests:
-    #
-    #         test_file = failed_test["test_file"]
-    #
-    #         test_name = failed_test["test_name"]
-    #
-    #         print(
-    #             f"\n===== ANALYZING "
-    #             f"{failed_test['test_case_id']} ====="
-    #         )
-    #
-    #         error_output = (
-    #             self.extract_failure_output(
-    #                 result.stdout,
-    #                 test_name
-    #             )
-    #         )
-    #
-    #         with open(
-    #             test_file,
-    #             "r",
-    #             encoding="utf-8"
-    #         ) as file:
-    #
-    #             test_code = file.read()
-    #
-    #         print(
-    #             "\n===== EXTRACTED FAILURE =====\n"
-    #         )
-    #
-    #         print(error_output)
-    #
-    #         analysis = self.failure_analyzer.analyze(
-    #             test_name=test_name,
-    #             error_message=error_output,
-    #             test_code=test_code
-    #         )
-    #
-    #         failed_test["ai_analysis"] = analysis
-    #
-    #         print(
-    #             "\n===== AI FAILURE ANALYSIS =====\n"
-    #         )
-    #
-    #         print(analysis)
-    #
-    #     report = {
-    #
-    #         "execution_time": datetime.now().isoformat(),
-    #
-    #         "summary": {
-    #
-    #             "total": len(test_results),
-    #
-    #             "passed": len(
-    #                 [
-    #                     test
-    #                     for test in test_results
-    #                     if test["status"] == "PASSED"
-    #                 ]
-    #             ),
-    #
-    #             "failed": len(
-    #                 [
-    #                     test
-    #                     for test in test_results
-    #                     if test["status"] == "FAILED"
-    #                 ]
-    #             )
-    #         },
-    #
-    #         "tests": test_results
-    #     }
-    #
-    #     self.save_report(report)
-    #
-    #     return test_results
+    # --------------------------------
+    # Extract test case ID from filename
+    # --------------------------------
 
     def extract_test_case_id(
         self,
         test_file: str
     ) -> str:
 
-        filename = test_file.split("/")[-1]
-
-        filename = filename.split("\\")[-1]
+        filename = Path(test_file).name
 
         match = re.search(
-            r"(TC-[A-Za-z0-9-]+)",
+            r"(TC[-_][A-Za-z0-9_-]+)",
             filename
         )
 
         if match:
-
             return match.group(1)
 
         return "UNKNOWN"
+
+    # --------------------------------
+    # Extract failure information
+    # --------------------------------
 
     def extract_failure_output(
         self,
@@ -448,7 +218,6 @@ class TestRunner:
         lines = pytest_output.splitlines()
 
         collecting = False
-
         failure_lines = []
 
         for line in lines:
@@ -457,57 +226,80 @@ class TestRunner:
                 line.startswith("_")
                 and test_name in line
             ):
-
                 collecting = True
 
             if collecting:
-
-                failure_lines.append(
-                    line
-                )
+                failure_lines.append(line)
 
             if (
                 collecting
                 and line.startswith("FAILED ")
             ):
-
                 break
 
         if failure_lines:
-
-            return "\n".join(
-                failure_lines
-            )
+            return "\n".join(failure_lines)
 
         return pytest_output
 
+    # --------------------------------
+    # Save execution report
+    # --------------------------------
+
     def save_report(
-        self,
-        report: dict
+            self,
+            report: dict
     ):
 
-        report_file = (
-            "reports/"
-            "test_execution_report.json"
+        report_dir = (
+                Path(__file__).resolve().parent.parent
+                / "reports"
+        )
+
+        report_dir.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        # --------------------------------
+        # Save JSON report
+        # --------------------------------
+
+        json_report_file = (
+                report_dir
+                / "test_execution_report.json"
         )
 
         with open(
-            report_file,
-            "w",
-            encoding="utf-8"
+                json_report_file,
+                "w",
+                encoding="utf-8"
         ) as file:
-
             json.dump(
                 report,
                 file,
                 indent=4
             )
 
+        print("\n===== REPORT =====")
+
         print(
-            "\n===== REPORT ====="
+            f"JSON report saved to: "
+            f"{json_report_file}"
+        )
+
+        # --------------------------------
+        # Generate HTML report
+        # --------------------------------
+
+        html_report_file = (
+            self.html_reporter.generate(
+                report
+            )
         )
 
         print(
-            f"Report saved to: "
-            f"{report_file}"
+            f"HTML report saved to: "
+            f"{html_report_file}"
         )
+

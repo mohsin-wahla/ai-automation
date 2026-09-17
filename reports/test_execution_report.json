@@ -1,35 +1,49 @@
 {
-    "execution_time": "2026-09-14T14:01:28.437387",
+    "execution_time": "2026-09-17T10:56:10.016093",
     "summary": {
-        "total": 4,
-        "passed": 3,
-        "failed": 1
+        "total": 6,
+        "passed": 4,
+        "failed": 2
     },
     "tests": [
         {
-            "test_case_id": "TC-US002-01",
-            "test_name": "test_user_can_add_single_product_to_shopping_cart",
-            "test_file": "tests/generated/test_TC-US002-01.py",
+            "test_case_id": "TC-001",
+            "test_name": "test_successfully_add_single_product_to_cart",
+            "test_file": "tests/generated/US-002/test_TC-001.py",
             "status": "PASSED"
         },
         {
-            "test_case_id": "TC-US002-02",
-            "test_name": "test_cart_badge_updates_correctly_when_adding_multiple_products",
-            "test_file": "tests/generated/test_TC-US002-02.py",
+            "test_case_id": "TC-002",
+            "test_name": "test_cart_badge_increments_when_multiple_products_added",
+            "test_file": "tests/generated/US-002/test_TC-002.py",
             "status": "PASSED"
         },
         {
-            "test_case_id": "TC-US002-03",
-            "test_name": "test_proceed_to_checkout_from_cart",
-            "test_file": "tests/generated/test_TC-US002-03.py",
+            "test_case_id": "TC-003",
+            "test_name": "test_proceed_to_checkout_from_shopping_cart",
+            "test_file": "tests/generated/US-002/test_TC-003.py",
             "status": "PASSED"
         },
         {
-            "test_case_id": "TC-US002-demo",
-            "test_name": "test_failure_demo",
-            "test_file": "tests/generated/test_TC-US002-demo.py",
+            "test_case_id": "TC_US002_01",
+            "test_name": "test_add_product_to_cart",
+            "test_file": "tests/generated/test_TC_US002_01.py",
+            "status": "PASSED"
+        },
+        {
+            "test_case_id": "TC_US002_02",
+            "test_name": "test_added_product_is_visible_in_cart",
+            "test_file": "tests/generated/test_TC_US002_02.py",
             "status": "FAILED",
-            "ai_analysis": "**FAILURE**\nThe test failed during the assertion phase because the shopping cart badge displayed the text \"1\", but the test expected it to display \"5\".\n\n**LIKELY ROOT CAUSE**\nThere is a logic mismatch between the test actions and the assertion. The test performs a single action to add one item (\"Sauce Labs Backpack\") to the cart, but the assertion is hardcoded to expect five items.\n\n**EVIDENCE**\n*   **Test Code:** Only one call is made to `products_page.add_product_to_cart()`.\n*   **Actual Value:** The Playwright call log confirms the locator `[data-test=\"shopping-cart-badge\"]` resolved to a span containing the text `\"1\"`.\n*   **Error Message:** `E AssertionError: Locator expected to have text '5'` / `E Actual value: 1`.\n\n**RECOMMENDED ACTION**\nUpdate the assertion to expect `\"1\"` instead of `\"5\"` to align with the single product added in the test steps. If the intent was to test a count of five, additional actions must be added to the test to reach that state."
+            "ai_analysis": "**FAILURE**\nThe test `test_added_product_is_visible_in_cart` failed during an `expect` assertion because the locator resolved to multiple elements, triggering a Playwright strict mode violation.\n\n**LIKELY ROOT CAUSE**\nThe selector `[data-test=\"inventory-item-name\"]` is a generic attribute shared by all products in the cart. Because there are 6 items currently in the cart, Playwright cannot perform a single-element text assertion (`to_have_text`) as it does not know which of the 6 elements to validate.\n\n**EVIDENCE**\n*   **Error Message:** `E Error: strict mode violation: locator(\"[data-test=\\\"inventory-item-name\\\"]\") resolved to 6 elements:`\n*   **Call Log:** The log identifies 6 distinct elements matching the locator, ranging from \"Sauce Labs Backpack\" to \"Test.allTheThings() T-Shirt (Red)\".\n*   **Actual Value:** `None` (Playwright returns `None` for the text value when strict mode fails before the text can be retrieved).\n\n**RECOMMENDED ACTION**\nRefine the locator to be specific to the desired product. Instead of targeting the generic `data-test` attribute alone, chain the locator with a filter or use a text-based locator (e.g., `page.get_by_text(\"Sauce Labs Backpack\")`) to ensure the locator resolves to exactly one element even when multiple items are present in the cart."
+        },
+        {
+            "test_case_id": "TC_US002_03",
+            "test_name": "test_cart_badge_should_show_five_items",
+            "test_file": "tests/generated/test_TC_US002_03.py",
+            "status": "FAILED",
+            "ai_analysis": "**FAILURE**\nThe test `test_cart_badge_should_show_five_items` failed during an assertion on the shopping cart badge. The test expected the badge to display the text `\"5\"`, but it actually displayed `\"1\"`.\n\n**LIKELY ROOT CAUSE**\nThere is a logic mismatch between the test actions and the assertion. The test script performs exactly one \"Add to Cart\" action but asserts that the cart count should be five. This appears to be a scripted intentional failure or a hardcoded expectation that does not account for the state of the application.\n\n**EVIDENCE**\n*   **Test Code (Line 19):** Only one item is added to the cart: `page.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click()`.\n*   **Test Code (Line 21):** A comment explicitly states: `# Intentional failure for MCP flow testing`.\n*   **Error Message:** `AssertionError: Locator expected to have text '5'`.\n*   **Actual Value:** `Actual value: 1`.\n*   **Call Log:** The Playwright locator resolved to `<span class=\"shopping_cart_badge\" data-test=\"shopping-cart-badge\">1</span>`.\n\n**RECOMMENDED ACTION**\nUpdate the assertion value to `\"1\"` to accurately reflect the number of items added during the test execution, or modify the test logic to add four additional items to the cart before asserting the count is `\"5\"`."
         }
-    ]
+    ],
+    "final_status": "ONE OR MORE TESTS FAILED"
 }
