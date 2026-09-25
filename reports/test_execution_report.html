@@ -73,7 +73,7 @@ body {
     display: grid;
 
     grid-template-columns:
-        repeat(4, 1fr);
+        repeat(5, 1fr);
 
     gap: 16px;
 
@@ -121,7 +121,9 @@ body {
 .card-value.failed {
     color: #dc2626;
 }
-
+.card-value.healed {
+    color: #2563eb;
+}
 .card-value.status {
     font-size: 18px;
 }
@@ -246,6 +248,10 @@ tr:last-child td {
     background: #fee2e2;
     color: #b91c1c;
 }
+.badge.healed {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
 
 .analysis {
     margin-top: 18px;
@@ -304,6 +310,79 @@ tr:last-child td {
     color: #6b7280;
 
     font-size: 13px;
+}
+.healing {
+    margin-top: 18px;
+
+    border:
+        1px solid #bfdbfe;
+
+    border-radius: 10px;
+
+    background: #f8fbff;
+
+    overflow: hidden;
+}
+
+.healing-title {
+    background: #eff6ff;
+
+    color: #1d4ed8;
+
+    font-weight: 700;
+
+    padding: 12px 14px;
+
+    border-bottom:
+        1px solid #bfdbfe;
+}
+
+.healing-body {
+    padding: 14px;
+}
+
+.healing-status {
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+}
+
+.healing-status.healed {
+    background: #dcfce7;
+
+    color: #15803d;
+}
+
+.healing-status.failed {
+    background: #fee2e2;
+
+    color: #b91c1c;
+}
+
+.healing-status.neutral {
+    background: #f3f4f6;
+
+    color: #6b7280;
+}
+
+.healing-detail {
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    color: #374151;
+
+    margin-top: 5px;
+
+    word-break: break-word;
 }
 
 .footer {
@@ -364,7 +443,7 @@ tr:last-child td {
             </div>
 
             <div class="card-value total">
-                6
+                2
             </div>
 
         </div>
@@ -377,7 +456,7 @@ tr:last-child td {
             </div>
 
             <div class="card-value passed">
-                4
+                0
             </div>
 
         </div>
@@ -390,12 +469,22 @@ tr:last-child td {
             </div>
 
             <div class="card-value failed">
-                2
+                1
             </div>
 
         </div>
 
+        <div class="card">
 
+            <div class="card-label">
+                Healed
+            </div>
+        
+            <div class="card-value healed">
+                1
+            </div>
+        
+        </div>
         <div class="card">
 
             <div class="card-label">
@@ -417,7 +506,7 @@ tr:last-child td {
             Execution Time:
         </strong>
 
-        2026-09-17T10:56:10.016093
+        2026-09-25T15:54:22.449796
 
     </div>
 
@@ -456,146 +545,45 @@ tr:last-child td {
                 <tr>
                     <td>
                         <span class="test-id">
-                            TC-001
+                            UNKNOWN
                         </span>
                     </td>
 
                     <td>
                         <strong>
-                            test_successfully_add_single_product_to_cart
+                            test_self_heal_backpack_locator
                         </strong>
 
                         <div class="test-file">
-                            tests/generated/US-002/test_TC-001.py
+                            tests/generated/self_healing/test_locator_heal_01.py
                         </div>
 
                         
-                    </td>
-
-                    <td>
-                        <span class="badge passed">
-                            ✓ PASSED
-                        </span>
-                    </td>
-                </tr>
-                
-
-                <tr>
-                    <td>
-                        <span class="test-id">
-                            TC-002
-                        </span>
-                    </td>
-
-                    <td>
-                        <strong>
-                            test_cart_badge_increments_when_multiple_products_added
-                        </strong>
-
-                        <div class="test-file">
-                            tests/generated/US-002/test_TC-002.py
-                        </div>
-
+                    <div class="analysis unavailable">
+                        AI failure analysis was not available
+                        for this test.
+                    </div>
+                    
                         
-                    </td>
+                    <div class="healing not-attempted">
 
-                    <td>
-                        <span class="badge passed">
-                            ✓ PASSED
-                        </span>
-                    </td>
-                </tr>
-                
-
-                <tr>
-                    <td>
-                        <span class="test-id">
-                            TC-003
-                        </span>
-                    </td>
-
-                    <td>
-                        <strong>
-                            test_proceed_to_checkout_from_shopping_cart
-                        </strong>
-
-                        <div class="test-file">
-                            tests/generated/US-002/test_TC-003.py
+                        <div class="healing-title">
+                            Self-Healing
                         </div>
 
-                        
-                    </td>
+                        <div class="healing-body">
 
-                    <td>
-                        <span class="badge passed">
-                            ✓ PASSED
-                        </span>
-                    </td>
-                </tr>
-                
+                            <div class="healing-status neutral">
+                                NOT ATTEMPTED
+                            </div>
 
-                <tr>
-                    <td>
-                        <span class="test-id">
-                            TC_US002_01
-                        </span>
-                    </td>
+                            <div class="healing-detail">
+                                <strong>Reason:</strong>
+                                Self-healing process failed: 503 UNAVAILABLE. {&#x27;error&#x27;: {&#x27;code&#x27;: 503, &#x27;message&#x27;: &#x27;This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.&#x27;, &#x27;status&#x27;: &#x27;UNAVAILABLE&#x27;}}
+                            </div>
 
-                    <td>
-                        <strong>
-                            test_add_product_to_cart
-                        </strong>
-
-                        <div class="test-file">
-                            tests/generated/test_TC_US002_01.py
                         </div>
 
-                        
-                    </td>
-
-                    <td>
-                        <span class="badge passed">
-                            ✓ PASSED
-                        </span>
-                    </td>
-                </tr>
-                
-
-                <tr>
-                    <td>
-                        <span class="test-id">
-                            TC_US002_02
-                        </span>
-                    </td>
-
-                    <td>
-                        <strong>
-                            test_added_product_is_visible_in_cart
-                        </strong>
-
-                        <div class="test-file">
-                            tests/generated/test_TC_US002_02.py
-                        </div>
-
-                        
-                    <div class="analysis">
-                        <div class="analysis-title">
-                            AI Failure Analysis
-                        </div>
-
-                        <pre>**FAILURE**
-The test `test_added_product_is_visible_in_cart` failed during an `expect` assertion because the locator resolved to multiple elements, triggering a Playwright strict mode violation.
-
-**LIKELY ROOT CAUSE**
-The selector `[data-test=&quot;inventory-item-name&quot;]` is a generic attribute shared by all products in the cart. Because there are 6 items currently in the cart, Playwright cannot perform a single-element text assertion (`to_have_text`) as it does not know which of the 6 elements to validate.
-
-**EVIDENCE**
-*   **Error Message:** `E Error: strict mode violation: locator(&quot;[data-test=\&quot;inventory-item-name\&quot;]&quot;) resolved to 6 elements:`
-*   **Call Log:** The log identifies 6 distinct elements matching the locator, ranging from &quot;Sauce Labs Backpack&quot; to &quot;Test.allTheThings() T-Shirt (Red)&quot;.
-*   **Actual Value:** `None` (Playwright returns `None` for the text value when strict mode fails before the text can be retrieved).
-
-**RECOMMENDED ACTION**
-Refine the locator to be specific to the desired product. Instead of targeting the generic `data-test` attribute alone, chain the locator with a filter or use a text-based locator (e.g., `page.get_by_text(&quot;Sauce Labs Backpack&quot;)`) to ensure the locator resolves to exactly one element even when multiple items are present in the cart.</pre>
                     </div>
                     
                     </td>
@@ -611,47 +599,67 @@ Refine the locator to be specific to the desired product. Instead of targeting t
                 <tr>
                     <td>
                         <span class="test-id">
-                            TC_US002_03
+                            UNKNOWN
                         </span>
                     </td>
 
                     <td>
                         <strong>
-                            test_cart_badge_should_show_five_items
+                            test_self_heal_bike_locator
                         </strong>
 
                         <div class="test-file">
-                            tests/generated/test_TC_US002_03.py
+                            tests/generated/self_healing/test_locator_heal_02.py
                         </div>
 
                         
-                    <div class="analysis">
-                        <div class="analysis-title">
-                            AI Failure Analysis
+                <div class="analysis">
+                    <div class="analysis-title">
+                        AI Failure Analysis
+                    </div>
+
+                    <pre>{&#x27;classification&#x27;: &#x27;Locator Defect&#x27;, &#x27;confidence&#x27;: &#x27;High&#x27;, &#x27;root_cause&#x27;: &quot;The data-test attribute value in the locator is truncated and does not match the actual element on the page; it is missing the trailing &#x27;t&#x27; in &#x27;light&#x27;.&quot;, &#x27;evidence&#x27;: [&quot;The test script contains a comment: &#x27;# INTENTIONAL LOCATOR DEFECT&#x27;&quot;, &#x27;Playwright timeout error waiting for locator(\&#x27;[data-test=&quot;add-to-cart-sauce-labs-bike-ligh&quot;]\&#x27;)&#x27;, &quot;The standard SauceDemo attribute for this item is &#x27;add-to-cart-sauce-labs-bike-light&#x27;&quot;], &#x27;recommended_action&#x27;: &#x27;Update the locator to use the full and correct data-test attribute value: \&#x27;[data-test=&quot;add-to-cart-sauce-labs-bike-light&quot;]\&#x27;&#x27;, &#x27;healing_allowed&#x27;: True, &#x27;healing_type&#x27;: &#x27;locator&#x27;, &#x27;replacement_locator&#x27;: &#x27;[data-test=&quot;add-to-cart-sauce-labs-bike-light&quot;]&#x27;}</pre>
+                </div>
+                
+                        
+                    <div class="healing">
+
+                        <div class="healing-title">
+                            Self-Healing
                         </div>
 
-                        <pre>**FAILURE**
-The test `test_cart_badge_should_show_five_items` failed during an assertion on the shopping cart badge. The test expected the badge to display the text `&quot;5&quot;`, but it actually displayed `&quot;1&quot;`.
+                        <div class="healing-body">
 
-**LIKELY ROOT CAUSE**
-There is a logic mismatch between the test actions and the assertion. The test script performs exactly one &quot;Add to Cart&quot; action but asserts that the cart count should be five. This appears to be a scripted intentional failure or a hardcoded expectation that does not account for the state of the application.
+                            <div class="healing-status healed">
+                                ✓ HEALED
+                            </div>
 
-**EVIDENCE**
-*   **Test Code (Line 19):** Only one item is added to the cart: `page.locator(&#x27;[data-test=&quot;add-to-cart-sauce-labs-backpack&quot;]&#x27;).click()`.
-*   **Test Code (Line 21):** A comment explicitly states: `# Intentional failure for MCP flow testing`.
-*   **Error Message:** `AssertionError: Locator expected to have text &#x27;5&#x27;`.
-*   **Actual Value:** `Actual value: 1`.
-*   **Call Log:** The Playwright locator resolved to `&lt;span class=&quot;shopping_cart_badge&quot; data-test=&quot;shopping-cart-badge&quot;&gt;1&lt;/span&gt;`.
+                            <div class="healing-detail">
+                                <strong>Type:</strong>
+                                locator
+                            </div>
 
-**RECOMMENDED ACTION**
-Update the assertion value to `&quot;1&quot;` to accurately reflect the number of items added during the test execution, or modify the test logic to add four additional items to the cart before asserting the count is `&quot;5&quot;`.</pre>
+                            
+                        <div class="healing-detail">
+                            <strong>Changed File:</strong>
+                            tests\generated\self_healing\test_locator_heal_02.py
+                        </div>
+                        
+
+                            <div class="healing-detail">
+                                <strong>Reason:</strong>
+                                Locator correction applied using AI diagnosis.
+                            </div>
+
+                        </div>
+
                     </div>
                     
                     </td>
 
                     <td>
-                        <span class="badge failed">
-                            ✗ FAILED
+                        <span class="badge healed">
+                            ✓ HEALED
                         </span>
                     </td>
                 </tr>

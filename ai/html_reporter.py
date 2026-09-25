@@ -30,6 +30,7 @@ class HTMLReporter:
         total = summary.get("total", 0)
         passed = summary.get("passed", 0)
         failed = summary.get("failed", 0)
+        healed = summary.get("healed", 0)
 
         execution_time = report.get(
             "execution_time",
@@ -68,17 +69,20 @@ class HTMLReporter:
                 "UNKNOWN"
             )
 
-            status_class_test = (
-                "passed"
-                if status == "PASSED"
-                else "failed"
-            )
+            if status == "PASSED":
 
-            status_badge = (
-                "✓ PASSED"
-                if status == "PASSED"
-                else "✗ FAILED"
-            )
+                status_class_test = "passed"
+                status_badge = "✓ PASSED"
+
+            elif status == "HEALED":
+
+                status_class_test = "healed"
+                status_badge = "✓ HEALED"
+
+            else:
+
+                status_class_test = "failed"
+                status_badge = "✗ FAILED"
 
             ai_analysis = test.get(
                 "ai_analysis"
@@ -86,28 +90,178 @@ class HTMLReporter:
 
             analysis_html = ""
 
-            if status == "FAILED":
+            if ai_analysis:
 
-                if ai_analysis:
+                analysis_html = f"""
+                <div class="analysis">
+                    <div class="analysis-title">
+                        AI Failure Analysis
+                    </div>
 
-                    analysis_html = f"""
-                    <div class="analysis">
-                        <div class="analysis-title">
-                            AI Failure Analysis
+                    <pre>{escape(
+                    str(ai_analysis)
+                )}</pre>
+                </div>
+                """
+
+            else:
+
+                if status == "FAILED":
+                    analysis_html = """
+                    <div class="analysis unavailable">
+                        AI failure analysis was not available
+                        for this test.
+                    </div>
+                    """
+
+            # --------------------------------
+            # Self-Healing information
+            # --------------------------------
+
+            healing = test.get(
+                "self_healing"
+            )
+
+            healing_html = ""
+
+            if healing:
+
+                healing_attempted = healing.get(
+                    "healing_attempted",
+                    False
+                )
+
+                healing_applied = healing.get(
+                    "healing_applied",
+                    False
+                )
+
+                healing_type = healing.get(
+                    "healing_type",
+                    "none"
+                )
+
+                changed_file = healing.get(
+                    "changed_file"
+                )
+
+                reason = healing.get(
+                    "reason"
+                )
+
+                rerun = healing.get(
+                    "rerun"
+                )
+
+                if healing_applied:
+
+                    if rerun and rerun.get("passed"):
+
+                        healing_status = "✓ HEALED"
+                        healing_status_class = "healed"
+
+                    elif rerun:
+
+                        healing_status = "✗ FAILED AFTER HEALING"
+                        healing_status_class = "failed"
+
+                    else:
+
+                        healing_status = "⚠ FIX APPLIED"
+                        healing_status_class = "healed"
+
+                    changed_file_html = ""
+
+                    if changed_file:
+                        changed_file_html = f"""
+                        <div class="healing-detail">
+                            <strong>Changed File:</strong>
+                            {escape(str(changed_file))}
+                        </div>
+                        """
+
+                    healing_html = f"""
+                    <div class="healing">
+
+                        <div class="healing-title">
+                            Self-Healing
                         </div>
 
-                        <pre>{escape(
-                            str(ai_analysis)
-                        )}</pre>
+                        <div class="healing-body">
+
+                            <div class="healing-status {healing_status_class}">
+                                {healing_status}
+                            </div>
+
+                            <div class="healing-detail">
+                                <strong>Type:</strong>
+                                {escape(str(healing_type))}
+                            </div>
+
+                            {changed_file_html}
+
+                            <div class="healing-detail">
+                                <strong>Reason:</strong>
+                                {escape(str(reason or "N/A"))}
+                            </div>
+
+                        </div>
+
+                    </div>
+                    """
+
+                elif healing_attempted:
+
+                    healing_html = f"""
+                    <div class="healing not-healed">
+
+                        <div class="healing-title">
+                            Self-Healing
+                        </div>
+
+                        <div class="healing-body">
+
+                            <div class="healing-status failed">
+                                ✗ HEALING NOT APPLIED
+                            </div>
+
+                            <div class="healing-detail">
+                                <strong>Type:</strong>
+                                {escape(str(healing_type))}
+                            </div>
+
+                            <div class="healing-detail">
+                                <strong>Reason:</strong>
+                                {escape(str(reason or "N/A"))}
+                            </div>
+
+                        </div>
+
                     </div>
                     """
 
                 else:
 
-                    analysis_html = """
-                    <div class="analysis unavailable">
-                        AI failure analysis was not available
-                        for this test.
+                    healing_html = f"""
+                    <div class="healing not-attempted">
+
+                        <div class="healing-title">
+                            Self-Healing
+                        </div>
+
+                        <div class="healing-body">
+
+                            <div class="healing-status neutral">
+                                NOT ATTEMPTED
+                            </div>
+
+                            <div class="healing-detail">
+                                <strong>Reason:</strong>
+                                {escape(str(reason or "N/A"))}
+                            </div>
+
+                        </div>
+
                     </div>
                     """
 
@@ -130,6 +284,7 @@ class HTMLReporter:
                         </div>
 
                         {analysis_html}
+                        {healing_html}
                     </td>
 
                     <td>
@@ -218,7 +373,7 @@ body {{
     display: grid;
 
     grid-template-columns:
-        repeat(4, 1fr);
+        repeat(5, 1fr);
 
     gap: 16px;
 
@@ -266,7 +421,9 @@ body {{
 .card-value.failed {{
     color: #dc2626;
 }}
-
+.card-value.healed {{
+    color: #2563eb;
+}}
 .card-value.status {{
     font-size: 18px;
 }}
@@ -391,6 +548,10 @@ tr:last-child td {{
     background: #fee2e2;
     color: #b91c1c;
 }}
+.badge.healed {{
+    background: #dbeafe;
+    color: #1d4ed8;
+}}
 
 .analysis {{
     margin-top: 18px;
@@ -449,6 +610,79 @@ tr:last-child td {{
     color: #6b7280;
 
     font-size: 13px;
+}}
+.healing {{
+    margin-top: 18px;
+
+    border:
+        1px solid #bfdbfe;
+
+    border-radius: 10px;
+
+    background: #f8fbff;
+
+    overflow: hidden;
+}}
+
+.healing-title {{
+    background: #eff6ff;
+
+    color: #1d4ed8;
+
+    font-weight: 700;
+
+    padding: 12px 14px;
+
+    border-bottom:
+        1px solid #bfdbfe;
+}}
+
+.healing-body {{
+    padding: 14px;
+}}
+
+.healing-status {{
+    display: inline-block;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+}}
+
+.healing-status.healed {{
+    background: #dcfce7;
+
+    color: #15803d;
+}}
+
+.healing-status.failed {{
+    background: #fee2e2;
+
+    color: #b91c1c;
+}}
+
+.healing-status.neutral {{
+    background: #f3f4f6;
+
+    color: #6b7280;
+}}
+
+.healing-detail {{
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    color: #374151;
+
+    margin-top: 5px;
+
+    word-break: break-word;
 }}
 
 .footer {{
@@ -540,7 +774,17 @@ tr:last-child td {{
 
         </div>
 
+        <div class="card">
 
+            <div class="card-label">
+                Healed
+            </div>
+        
+            <div class="card-value healed">
+                {healed}
+            </div>
+        
+        </div>
         <div class="card">
 
             <div class="card-label">

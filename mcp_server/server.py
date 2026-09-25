@@ -2,9 +2,7 @@ import json
 from pathlib import Path
 import os
 
-
 from mcp.server.fastmcp import FastMCP
-
 from ai.test_runner import TestRunner
 
 print(
@@ -12,22 +10,14 @@ print(
     bool(os.getenv("GEMINI_API_KEY"))
 )
 
-
 mcp = FastMCP("AI Automation Server")
-
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 @mcp.tool()
 def run_tests() -> str:
-    """
-    Run all generated Playwright tests through TestRunner.
-    """
-
-
     runner = TestRunner()
-
     results = runner.run_all_generated_tests()
 
     return json.dumps(
@@ -35,12 +25,9 @@ def run_tests() -> str:
         indent=4
     )
 
+
 @mcp.tool()
 def read_test_report() -> str:
-    """
-    Read the latest test execution report.
-    """
-
     report_file = (
         PROJECT_ROOT
         / "reports"

@@ -1,6 +1,7 @@
 import json
 import re
 import subprocess
+from ai.safe_healer import SafeHealer
 
 from datetime import datetime
 from pathlib import Path
@@ -12,10 +13,8 @@ from ai.html_reporter import HTMLReporter
 class TestRunner:
 
     def __init__(self):
-        # AI failure analysis enabled.
-        # If you want completely non-AI execution temporarily,
-        # change this to None.
         self.failure_analyzer = FailureAnalyzer()
+        self.safe_healer = SafeHealer()
         self.html_reporter = HTMLReporter()
 
     def run_all_generated_tests(self):
@@ -39,10 +38,11 @@ class TestRunner:
                 + result.stderr
             )
 
-        if result.returncode == 0:
-            status = "ALL TESTS PASSED"
-        else:
-            status = "ONE OR MORE TESTS FAILED"
+        initial_status = (
+            "ALL TESTS PASSED"
+            if result.returncode == 0
+            else "ONE OR MORE TESTS FAILED"
+        )
 
         test_results = []
 
@@ -134,14 +134,50 @@ class TestRunner:
                         test_code=test_code
                     )
 
-                    failed_test["ai_analysis"] = analysis
+                    failed_test["ai_analysis"] = analysis.model_dump()
+
+                    healing_result = self.safe_healer.heal(
+                        test_file=test_file,
+                        analysis=analysis,
+                        failure_output=error_output,
+                    )
+
+                    failed_test["self_healing"] = healing_result
+                    if healing_result["healing_applied"]:
+
+                        rerun_result = self._rerun_test(test_file)
+
+                        failed_test["self_healing"]["rerun"] = rerun_result
+
+                        if rerun_result["passed"]:
+                            failed_test["status"] = "HEALED"
+                        else:
+                            failed_test["status"] = "FAILED_AFTER_HEALING"
+
 
                 except Exception as error:
 
-                    failed_test["ai_analysis"] = (
-                        f"Failure analysis could not be generated: "
-                        f"{error}"
-                    )
+                    failed_test["self_healing"] = {
+
+                        "healing_attempted": False,
+
+                        "healing_applied": False,
+
+                        "healing_type": "none",
+
+                        "changed_file": None,
+
+                        "original_code": None,
+
+                        "updated_code": None,
+
+                        "reason": (
+
+                            f"Self-healing process failed: {error}"
+
+                        ),
+
+                    }
 
         # --------------------------------
         # Final report
@@ -159,6 +195,29 @@ class TestRunner:
             if test["status"] == "FAILED"
         )
 
+        healed_count = sum(
+            1
+            for test in test_results
+            if test.get("self_healing", {}).get(
+                "healing_applied",
+                False
+            )
+        )
+        final_failed_count = sum(
+            1
+            for test in test_results
+            if test["status"] in (
+                "FAILED",
+                "FAILED_AFTER_HEALING"
+            )
+        )
+
+        final_status = (
+            "ALL TESTS PASSED"
+            if final_failed_count == 0
+            else "ONE OR MORE TESTS FAILED"
+        )
+
         report = {
 
             "execution_time": datetime.now().isoformat(),
@@ -166,18 +225,19 @@ class TestRunner:
             "summary": {
                 "total": len(test_results),
                 "passed": passed_count,
-                "failed": failed_count
+                "failed": failed_count,
+                "healed": healed_count
             },
 
             "tests": test_results,
 
-            "final_status": status
+            "final_status": final_status
         }
 
         self.save_report(report)
 
         return {
-            "status": status,
+            "status": final_status,
             "exit_code": result.returncode,
             "pytest_output": output,
             "tests": test_results,
@@ -243,9 +303,59 @@ class TestRunner:
         return pytest_output
 
     # --------------------------------
-    # Save execution report
+    # Rerun failed test after healing
     # --------------------------------
+    def _rerun_test(self, test_file: str) -> dict:
 
+        import subprocess
+        import sys
+
+        try:
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    test_file,
+                    "-v",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
+
+            output = result.stdout + "\n" + result.stderr
+
+            passed = result.returncode == 0
+
+            return {
+                "attempted": True,
+                "passed": passed,
+                "timed_out": False,
+                "return_code": result.returncode,
+                "output": output,
+            }
+
+        except subprocess.TimeoutExpired as error:
+
+            stdout = error.stdout or ""
+            stderr = error.stderr or ""
+
+            return {
+                "attempted": True,
+                "passed": False,
+                "timed_out": True,
+                "return_code": None,
+                "output": (
+                        stdout
+                        + "\n"
+                        + stderr
+                        + "\n\n"
+                          "RERUN TIMEOUT: "
+                          "targeted pytest exceeded 60 seconds."
+                ),
+            }
     def save_report(
             self,
             report: dict

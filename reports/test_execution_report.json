@@ -1,48 +1,62 @@
 {
-    "execution_time": "2026-09-17T10:56:10.016093",
+    "execution_time": "2026-09-25T15:54:22.449796",
     "summary": {
-        "total": 6,
-        "passed": 4,
-        "failed": 2
+        "total": 2,
+        "passed": 0,
+        "failed": 1,
+        "healed": 1
     },
     "tests": [
         {
-            "test_case_id": "TC-001",
-            "test_name": "test_successfully_add_single_product_to_cart",
-            "test_file": "tests/generated/US-002/test_TC-001.py",
-            "status": "PASSED"
-        },
-        {
-            "test_case_id": "TC-002",
-            "test_name": "test_cart_badge_increments_when_multiple_products_added",
-            "test_file": "tests/generated/US-002/test_TC-002.py",
-            "status": "PASSED"
-        },
-        {
-            "test_case_id": "TC-003",
-            "test_name": "test_proceed_to_checkout_from_shopping_cart",
-            "test_file": "tests/generated/US-002/test_TC-003.py",
-            "status": "PASSED"
-        },
-        {
-            "test_case_id": "TC_US002_01",
-            "test_name": "test_add_product_to_cart",
-            "test_file": "tests/generated/test_TC_US002_01.py",
-            "status": "PASSED"
-        },
-        {
-            "test_case_id": "TC_US002_02",
-            "test_name": "test_added_product_is_visible_in_cart",
-            "test_file": "tests/generated/test_TC_US002_02.py",
+            "test_case_id": "UNKNOWN",
+            "test_name": "test_self_heal_backpack_locator",
+            "test_file": "tests/generated/self_healing/test_locator_heal_01.py",
             "status": "FAILED",
-            "ai_analysis": "**FAILURE**\nThe test `test_added_product_is_visible_in_cart` failed during an `expect` assertion because the locator resolved to multiple elements, triggering a Playwright strict mode violation.\n\n**LIKELY ROOT CAUSE**\nThe selector `[data-test=\"inventory-item-name\"]` is a generic attribute shared by all products in the cart. Because there are 6 items currently in the cart, Playwright cannot perform a single-element text assertion (`to_have_text`) as it does not know which of the 6 elements to validate.\n\n**EVIDENCE**\n*   **Error Message:** `E Error: strict mode violation: locator(\"[data-test=\\\"inventory-item-name\\\"]\") resolved to 6 elements:`\n*   **Call Log:** The log identifies 6 distinct elements matching the locator, ranging from \"Sauce Labs Backpack\" to \"Test.allTheThings() T-Shirt (Red)\".\n*   **Actual Value:** `None` (Playwright returns `None` for the text value when strict mode fails before the text can be retrieved).\n\n**RECOMMENDED ACTION**\nRefine the locator to be specific to the desired product. Instead of targeting the generic `data-test` attribute alone, chain the locator with a filter or use a text-based locator (e.g., `page.get_by_text(\"Sauce Labs Backpack\")`) to ensure the locator resolves to exactly one element even when multiple items are present in the cart."
+            "self_healing": {
+                "healing_attempted": false,
+                "healing_applied": false,
+                "healing_type": "none",
+                "changed_file": null,
+                "original_code": null,
+                "updated_code": null,
+                "reason": "Self-healing process failed: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+            }
         },
         {
-            "test_case_id": "TC_US002_03",
-            "test_name": "test_cart_badge_should_show_five_items",
-            "test_file": "tests/generated/test_TC_US002_03.py",
-            "status": "FAILED",
-            "ai_analysis": "**FAILURE**\nThe test `test_cart_badge_should_show_five_items` failed during an assertion on the shopping cart badge. The test expected the badge to display the text `\"5\"`, but it actually displayed `\"1\"`.\n\n**LIKELY ROOT CAUSE**\nThere is a logic mismatch between the test actions and the assertion. The test script performs exactly one \"Add to Cart\" action but asserts that the cart count should be five. This appears to be a scripted intentional failure or a hardcoded expectation that does not account for the state of the application.\n\n**EVIDENCE**\n*   **Test Code (Line 19):** Only one item is added to the cart: `page.locator('[data-test=\"add-to-cart-sauce-labs-backpack\"]').click()`.\n*   **Test Code (Line 21):** A comment explicitly states: `# Intentional failure for MCP flow testing`.\n*   **Error Message:** `AssertionError: Locator expected to have text '5'`.\n*   **Actual Value:** `Actual value: 1`.\n*   **Call Log:** The Playwright locator resolved to `<span class=\"shopping_cart_badge\" data-test=\"shopping-cart-badge\">1</span>`.\n\n**RECOMMENDED ACTION**\nUpdate the assertion value to `\"1\"` to accurately reflect the number of items added during the test execution, or modify the test logic to add four additional items to the cart before asserting the count is `\"5\"`."
+            "test_case_id": "UNKNOWN",
+            "test_name": "test_self_heal_bike_locator",
+            "test_file": "tests/generated/self_healing/test_locator_heal_02.py",
+            "status": "HEALED",
+            "ai_analysis": {
+                "classification": "Locator Defect",
+                "confidence": "High",
+                "root_cause": "The data-test attribute value in the locator is truncated and does not match the actual element on the page; it is missing the trailing 't' in 'light'.",
+                "evidence": [
+                    "The test script contains a comment: '# INTENTIONAL LOCATOR DEFECT'",
+                    "Playwright timeout error waiting for locator('[data-test=\"add-to-cart-sauce-labs-bike-ligh\"]')",
+                    "The standard SauceDemo attribute for this item is 'add-to-cart-sauce-labs-bike-light'"
+                ],
+                "recommended_action": "Update the locator to use the full and correct data-test attribute value: '[data-test=\"add-to-cart-sauce-labs-bike-light\"]'",
+                "healing_allowed": true,
+                "healing_type": "locator",
+                "replacement_locator": "[data-test=\"add-to-cart-sauce-labs-bike-light\"]"
+            },
+            "self_healing": {
+                "healing_attempted": true,
+                "healing_applied": true,
+                "healing_type": "locator",
+                "changed_file": "tests\\generated\\self_healing\\test_locator_heal_02.py",
+                "original_code": "from playwright.sync_api import Page, expect\n\n\ndef test_self_heal_bike_locator(page: Page):\n    page.goto(\"https://www.saucedemo.com/\")\n\n    page.locator('[data-test=\"username\"]').fill(\"standard_user\")\n    page.locator('[data-test=\"password\"]').fill(\"secret_sauce\")\n    page.locator('[data-test=\"login-button\"]').click()\n\n    expect(page).to_have_url(\n        \"https://www.saucedemo.com/inventory.html\"\n    )\n\n    # INTENTIONAL LOCATOR DEFECT\n    page.locator(\n        '[data-test=\"add-to-cart-sauce-labs-bike-ligh\"]'\n    ).click(timeout=5000)\n\n    expect(\n        page.locator('[data-test=\"shopping-cart-badge\"]')\n    ).to_have_text(\"1\")",
+                "updated_code": "from playwright.sync_api import Page, expect\n\n\ndef test_self_heal_bike_locator(page: Page):\n    page.goto(\"https://www.saucedemo.com/\")\n\n    page.locator('[data-test=\"username\"]').fill(\"standard_user\")\n    page.locator('[data-test=\"password\"]').fill(\"secret_sauce\")\n    page.locator('[data-test=\"login-button\"]').click()\n\n    expect(page).to_have_url(\n        \"https://www.saucedemo.com/inventory.html\"\n    )\n\n    # INTENTIONAL LOCATOR DEFECT\n    page.locator(\n        '[data-test=\"add-to-cart-sauce-labs-bike-light\"]'\n    ).click(timeout=5000)\n\n    expect(\n        page.locator('[data-test=\"shopping-cart-badge\"]')\n    ).to_have_text(\"1\")",
+                "reason": "Locator correction applied using AI diagnosis.",
+                "rerun": {
+                    "attempted": true,
+                    "passed": true,
+                    "timed_out": false,
+                    "return_code": 0,
+                    "output": "============================= test session starts =============================\nplatform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- H:\\Automation Playwright\\Ai Automation Project\\.venv\\Scripts\\python.exe\ncachedir: .pytest_cache\nrootdir: H:\\Automation Playwright\\Ai Automation Project\nconfigfile: pytest.ini\nplugins: anyio-4.15.1, base-url-2.1.0, playwright-0.9.0\ncollecting ... collected 1 item\n\ntests/generated/self_healing/test_locator_heal_02.py::test_self_heal_bike_locator[chromium] PASSED [100%]\n\n============================== 1 passed in 1.87s ==============================\n\n"
+                }
+            }
         }
     ],
     "final_status": "ONE OR MORE TESTS FAILED"

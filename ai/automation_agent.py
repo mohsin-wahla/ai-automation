@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sys
 from pathlib import Path
 import os
 import re
@@ -267,10 +268,17 @@ class AutomationAgent:
 
         print("\n===== STEP 4: RUNNING TESTS THROUGH MCP =====")
 
+        server_env = os.environ.copy()
+
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+        if gemini_api_key:
+            server_env["GEMINI_API_KEY"] = gemini_api_key
+
         server_params = StdioServerParameters(
-            command="python",
+            command=sys.executable,
             args=["-m", "mcp_server.server"],
-            env=os.environ.copy(),
+            env=server_env,
         )
 
         async with stdio_client(

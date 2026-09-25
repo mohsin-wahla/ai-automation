@@ -109,14 +109,59 @@ class GeminiClient:
 
         return response.text or ""
 
-    # def generate_automation(self, prompt: str) -> str:
-    #
-    #     response = self.client.models.generate_content(
-    #         model=self.model,
-    #         contents=prompt,
-    #         config=types.GenerateContentConfig(
-    #             response_mime_type="text/plain"
-    #         )
-    #     )
-    #
-    #     return response.text
+    def generate_failure_analysis(self, prompt: str) -> str:
+        response = self.client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema={
+                    "type": "OBJECT",
+                    "properties": {
+                        "classification": {
+                            "type": "STRING"
+                        },
+
+                        "confidence": {
+                            "type": "STRING"
+                        },
+                        "root_cause": {
+                            "type": "STRING"
+                        },
+                        "evidence": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "STRING"
+                            }
+                        },
+                        "recommended_action": {
+                            "type": "STRING"
+                        },
+                        "healing_allowed": {
+                            "type": "BOOLEAN"
+                        },
+                        "healing_type": {
+                            "type": "STRING"
+                        },
+                        "replacement_locator": {
+                            "type": "STRING"
+                        }
+                    },
+                    "required": [
+                        "classification",
+                        "confidence",
+                        "root_cause",
+                        "evidence",
+                        "recommended_action",
+                        "healing_allowed",
+                        "healing_type",
+                        "replacement_locator"
+                    ]
+                }
+            )
+        )
+
+        return response.text or ""
+
+
+
